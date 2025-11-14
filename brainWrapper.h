@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Brain.h>
 // #include <SoftwareSerial.h>
 #include "brainWave.h"
@@ -7,7 +8,8 @@
 
   Abstracts the contents within the Arduino Brain Library into a few method calls.
   Brain Library: https://github.com/kitschpatrol/Arduino-Brain-Library
-  Use this object by calling update() within the main loop
+  Use this object by calling update() within the main loop.
+  Assumes the Brain object has already been connected via a Hardware Serial or a Software Serial
 */
 
 typedef struct BRAIN_WAVE
@@ -25,13 +27,12 @@ typedef struct BRAIN_WAVE
 class brainWrapper
 {
   public:
-  brainWrapper(int RX, unsigned long baud = 9600) {
-    pin = RX;
-    brainSerial(2);
-    brain(brainSerial);
-
-    brainSerial.begin(baud, SERIAL_8N1, pin, 42);
-    Serial.println("foo)");
+  brainWrapper(Brain* b) : brain(b) {
+    for(int i = 0; i < 8; i++) {
+      brain_waves.push_back(0);
+    }
+    // brainSerial.begin(baud, SERIAL_8N1, pin, 42);
+    // Serial.println("foo)");
   }
   // brainWrapper(HardwareSerial* h, int RX) : brainSerial(h), brain(b), pin(RX), brain(brainSerial) {
   //   // softSerial.begin(115200);
@@ -47,18 +48,13 @@ class brainWrapper
     return debug;
   }
 
-  // void begin(unsigned long baud = 9600)
-  // {
-  //   brainSerial->begin(baud, SERIAL_8N1, pin, 42);
-  // }
-
   void update()
   {
-    Serial.println(brain.readCSV());
-    if(brain.update()) {
-      unsigned long* waves = brain.readPowerArray();
-      attention = brain.readAttention();
-      meditation = brain.readMeditation();
+    Serial.println(brain->readCSV());
+    if(brain->update()) {
+      unsigned long* waves = brain->readPowerArray();
+      attention = brain->readAttention();
+      meditation = brain->readMeditation();
       brain_waves.at(BRAIN_WAVE::DELTA) = waves[BRAIN_WAVE::DELTA];
       brain_waves.at(BRAIN_WAVE::THETA) = waves[BRAIN_WAVE::THETA];
       brain_waves.at(BRAIN_WAVE::LOW_ALPHA) = waves[BRAIN_WAVE::LOW_ALPHA];
@@ -77,8 +73,8 @@ class brainWrapper
       // brain_waves.at(HIGH_GAMMA) = brain.readHighGamma();
     }
     if(debug) {
-      Serial.println(brain.readErrors());
-      Serial.println(brain.readCSV());
+      Serial.println(brain->readErrors());
+      Serial.println(brain->readCSV());
     }
   }
 
@@ -96,9 +92,9 @@ class brainWrapper
 
   private:
   bool debug = false;
-  HardwareSerial brainSerial;
+  // HardwareSerial brainSerial;
   // SoftwareSerial* brainSerial;
-  Brain brain;
+  Brain* brain;
   int pin;
   std::vector<unsigned long> brain_waves;
   uint8_t attention;
