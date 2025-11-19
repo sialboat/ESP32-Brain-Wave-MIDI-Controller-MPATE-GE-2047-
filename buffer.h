@@ -25,6 +25,7 @@ class buffer
     set_interp_mode(t);
   }
 
+  // random fuckshit oneliner methods
   void set_buffer_len(size_t val) {buffer_length = val;}
   size_t get_buffer_len() {return buffer_length;}
   void get_val() {return out_val;}
@@ -59,8 +60,7 @@ class buffer
   long read()
   {
     // read_index is updated in respective functions
-    switch (interpolation_mode)
-    {
+    switch (interpolation_mode) {
       case INTERP::INTERPOLATION::NEAREST_NEIGHBORS:
         out_val = nearest_neighbors();
         break;

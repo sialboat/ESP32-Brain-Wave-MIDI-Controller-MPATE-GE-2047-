@@ -16,7 +16,7 @@ namespace INTERP
 class brainWave
 {
   public:
-  brainWave() {
+  brainWave(size_t i) : fft_index(i) {
     alpha = 0.2f;
     interpolation_mode = INTERP::INTERPOLATION::HERMITE;
     p0 = 0;
@@ -27,6 +27,8 @@ class brainWave
     out_val = 0;
   }
 
+  void set_fft_index(size_t val) {fft_index = val;}
+  size_t get_fft_index() {return fft_index;}
   void set_val(unsigned long new_val) {p1 = new_val;}
   unsigned long get_val() {return val;}
   void set_alpha(float new_alpha) {alpha = new_alpha;}
@@ -53,6 +55,8 @@ class brainWave
   // updates the value stored in val
   void update(unsigned long new_val)
   {
+    // = arr[fft_index];
+
     // sample data
     p2 = p1;
     p1 = p0;
@@ -63,7 +67,7 @@ class brainWave
     m1 = (p2 - p0) / 2;     // approximate tangent of p1
   }
 
-  void interp()
+  unsinged long interp()
   {
     switch(interpolation_mode)
     {
@@ -80,6 +84,8 @@ class brainWave
         out_val = hermite();
         break;
     }
+
+    return out_val;
   }
 
   // simple low computation moving average filter / linear interpolation algorithm
@@ -177,6 +183,7 @@ class brainWave
   }
 
   private:
+  size_t fft_index;   // index of the FFT array upon calling "brain->readPowerArray()"
   INTERP::INTERPOLATION interpolation_mode;
   float alpha;
   unsigned long out_val;

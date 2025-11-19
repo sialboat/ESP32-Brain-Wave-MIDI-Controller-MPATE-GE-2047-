@@ -42,7 +42,7 @@ class brainWrapper
   public:
   brainWrapper(Brain* b) : brain(b) {
     for(int i = 0; i < 8; i++) {
-      brainWave wave();
+      brainWave wave(i);
       brain_waves.push_back(wave);
     }
     // brainSerial.begin(baud, SERIAL_8N1, pin, 42);
@@ -88,15 +88,15 @@ class brainWrapper
         Serial.println(brain->readErrors());
         Serial.println(brain->readCSV());
       }
+      interp();
     }
   }
 
   void interp()
   {
-    // hermite(BRAIN_WAVE::FFT_Band::DELTA);
-    for(brainWave i : brain_waves)
+    for(brainWave& i : brain_waves)
     {
-      // i.hermite(waves[i]);
+      i = i.interp();
     }
   }
   
