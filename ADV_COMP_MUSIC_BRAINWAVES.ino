@@ -9,14 +9,20 @@
 */
 
 #include "brainWrapper.h"
+#include <Adafruit_TinyUSB.h>
 #include <SoftwareSerial.h>
 #include <Brain.h>
-#include "USB.h"
+#include <MIDI.h>
 
+// #include "USB.h"
+
+// MEAP STUFF
 #define CONTROL_RATE 128 // Hz, powers of 2 are most reliable
 #include <Meap.h>        // MEAP library, includes all dependent libraries, including all Mozzi modules
 
-// Meap meap;                                           // creates MEAP object to handle inputs and other MEAP library functions
+Adafruit_USBD_MIDI usb_midi;
+MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI); // defines MIDI in/out ports
+Meap meap;                                           // creates MEAP object to handle inputs and other MEAP library functions
 // MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // defines MIDI in/out ports
 
 HardwareSerial brainSerial(2);
@@ -29,66 +35,6 @@ brainWrapper bryan(&brain);
 void setup() {}
 void loop() {}
 #else
-
-#include "esp32-hal-tinyusb.h"
-
-static const char *TAG = "usbdmidi";
-/** TinyUSB descriptors **/
-
-extern "C" uint16_t tusb_midi_load_descriptor(uint8_t *dst, uint8_t *itf) {
-  uint8_t str_index = tinyusb_add_string_descriptor("TinyUSB MIDI");
-  uint8_t ep_num = tinyusb_get_free_duplex_endpoint();
-  TU_VERIFY(ep_num != 0);
-  uint8_t descriptor[TUD_MIDI_DESC_LEN] = {
-    // Interface number, string index, EP Out & EP In address, EP size
-    TUD_MIDI_DESCRIPTOR(*itf, str_index, ep_num, (uint8_t)(0x80 | ep_num),
-                        64)
-  };
-  *itf += 1;
-  memcpy(dst, descriptor, TUD_MIDI_DESC_LEN);
-  return TUD_MIDI_DESC_LEN;
-}
-
-// From usb.org MIDI 1.0 specification. This 4 byte structure is the unit
-// of transfer for MIDI data over USB.
-typedef struct __attribute__((__packed__)) {
-  uint8_t code_index_number : 4;
-  uint8_t cable_number : 4;
-  uint8_t MIDI_0;
-  uint8_t MIDI_1;
-  uint8_t MIDI_2;
-} USB_MIDI_t;
-
-// Basic MIDI Messages
-// midi spec talks ab this
-#define NOTE_OFF 0x80
-#define NOTE_ON 0x90
-#define CONTROL_CHANGE 0xB0
-
-static void usbEventCallback(void *arg, esp_event_base_t event_base,
-                             int32_t event_id, void *event_data) {
-  if (event_base == ARDUINO_USB_EVENTS) {
-    arduino_usb_event_data_t *data = (arduino_usb_event_data_t *)event_data;
-    switch (event_id) {
-      case ARDUINO_USB_STARTED_EVENT:
-        Serial.println("USB PLUGGED");
-        break;
-      case ARDUINO_USB_STOPPED_EVENT:
-        Serial.println("USB UNPLUGGED");
-        break;
-      case ARDUINO_USB_SUSPEND_EVENT:
-        Serial.printf("USB SUSPENDED: remote_wakeup_en: %u\n",
-                      data->suspend.remote_wakeup_en);
-        break;
-      case ARDUINO_USB_RESUME_EVENT:
-        Serial.println("USB RESUMED");
-        break;
-
-      default:
-        break;
-    }
-  }
-}
 
 void setup() {
   // Serial.begin(9600);

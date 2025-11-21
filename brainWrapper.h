@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Brain.h>
-// #include <SoftwareSerial.h>
 #include "brainWave.h"
+// #include <SoftwareSerial.h>
 
 /*
   BrainWrapper object
@@ -106,7 +106,7 @@ class brainWrapper
     // }
   }
 
-  
+
   uint8_t getMeditation() {return meditation;}
   uint8_t getAttention() {return attention;}
   unsigned long getDelta() {return brain_waves.at(static_cast<size_t>(BRAIN_WAVE::FFT_BAND::DELTA)).get_val();}
