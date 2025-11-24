@@ -1,5 +1,7 @@
 // Adafruit TinyUSB Test
-// Serial and MIDI Communication ino test file.
+// Serial and MIDI Communication ino test file using Adafruit TinyUSB abstraction
+// of the TinyUSB library. Tested with the MEAP, an ESP32-based audio prototyping board
+// using "USB CDC on Boot Enabled" "TinyUSB USB Mode" and "UART/CDC Upload Mode"
 #include <Arduino.h>
 #include <MIDI.h>
 #include "Adafruit_TinyUSB.h"
