@@ -14,7 +14,6 @@
 #include <MIDI.h>
 #include <Brain.h>
 #include <Adafruit_NeoPixel.h>
-#include <SoftwareSerial.h>
 
 // add a neopixel for visual feedback / indicator of other changes that will happen.
 // Consult ~/Documents/Arduino/neopixel_demo/neopixel_demo.ino for what to do.
@@ -37,7 +36,7 @@ Meap meap;                                                 // creates MEAP objec
 HardwareSerial brainSerial(2);
 // SoftwareSerial brainSerial(BRAIN_PIN, BUILTIN_LED);
 Brain brain(brainSerial);
-brainWrapper bryan(&brain);
+brainWrapper bryan(&brain, &usbc_serial, &usb_midi);
 
 Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(4, NEOPIXEL_PIN, NEO_RGB);
 
@@ -77,12 +76,13 @@ void setup() {
 //  MIDI.setHandlePitchBend(handlePitchBend);
 //  MIDI.setHandleProgramChange(handleProgramChange);
 //  MIDI.set whatever the fuck else I decide to do
+
   //  consult MIDI.h (~/Documents/Arduino/libraries/MIDI_Library/src/MIDI.h and
   //  ~/Documents/Arduino/libraries/MIDI_Library/src/MIDI.cpp
 
   meap.begin();
   startMozzi(CONTROL_RATE);   
-  // bryan.setDebug(true);
+  bryan.setDebug(true);
   // USB.onEvent(usbEventCallback);
   // tinyusb_enable_interface(USB_INTERFACE_MIDI, TUD_MIDI_DESC_LEN,
   //                         tusb_midi_load_descriptor);
@@ -104,10 +104,8 @@ void loop() {
   }
   MIDI.sendNoteOn(48, 127, 1);
   MIDI.sendNoteOff(48, 127, 1);
-  delay(100);
+  // delay(100);
   MIDI.read();
-  usbc_serial.println(brain.readErrors());
-  usbc_serial.println(brain.readCSV());
   bryan.update();
   audioHook(); // handles Mozzi audio generation behind the scenes
 }

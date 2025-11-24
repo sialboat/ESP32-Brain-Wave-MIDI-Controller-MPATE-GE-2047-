@@ -1,5 +1,5 @@
 # TODO
-- [ ] MIDI via Brain signal
+- [X] MIDI via Brain signal
 - [ ] Chaos Generator base class
 - [ ] NeoPixel integration for visual feedback
 - [ ] Dip Switch enables the eight different chaos generators

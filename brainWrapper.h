@@ -1,7 +1,9 @@
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h>
+#include <MIDI.h>
 #include <Brain.h>
+#include <Adafruit_NeoPixel.h>
 #include "brainWave.h"
-// #include <SoftwareSerial.h>
 
 /*
   BrainWrapper object
@@ -28,7 +30,7 @@ namespace BRAIN_WAVE
 class brainWrapper
 {
 public:
-  brainWrapper(Brain* b) : brain(b) {
+  brainWrapper(Brain* b, Adafruit_USBD_CDC* s, Adafruit_USBD_MIDI* m) : brain(b), adafruit_serial(s), adafruit_midi(m) {
     for(int i = 0; i < 8; i++) {
       brainWave wave(i);
       brain_waves.push_back(wave);
@@ -47,8 +49,8 @@ public:
       attention = brain->readAttention();
       meditation = brain->readMeditation();
      if(debug) {
-        Serial.println(brain->readErrors());
-        Serial.println(brain->readCSV());
+        adafruit_serial->println(brain->readErrors());
+        adafruit_serial->println(brain->readCSV());
       }
       interp();
     }
@@ -79,9 +81,11 @@ public:
 
   // the fuckshit that makes this happen
 private:
+  Brain* brain;
+  Adafruit_USBD_MIDI* adafruit_midi;
+  Adafruit_USBD_CDC* adafruit_serial;
   unsigned long* waves;
   bool debug = false;
-  Brain* brain;
   int pin;
   std::vector<brainWave> brain_waves;
   uint8_t attention;
