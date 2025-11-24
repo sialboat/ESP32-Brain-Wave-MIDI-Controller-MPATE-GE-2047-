@@ -3,38 +3,40 @@
   
   contains software used for the ESP32-based MEAP (Mason's ESP32 Audio Prototyping board) prototyping system developed by Mason Mann
   for MPATE-GE 2047 Advanced Computer Music. This .ino file interfaces with a MindFlex EEG sensor with the Brain library from Frontiernerds
-  and uses tinyUSB for USB usbc-serial and MIDI communication.
+  and uses tinyUSB for USB usbc_serial and MIDI communication.
 
   Brain Library: https://github.com/kitschpatrol/Arduino-Brain-Library
 */
 
+#include <Arduino.h>
 #include "brainWrapper.h"
 #include <Adafruit_TinyUSB.h>
 #include <MIDI.h>
-#include <Softwareusbc-serial.h>
 #include <Brain.h>
-#include <MIDI.h>
 #include <Adafruit_NeoPixel.h>
+#include <SoftwareSerial.h>
 
 // add a neopixel for visual feedback / indicator of other changes that will happen.
 // Consult ~/Documents/Arduino/neopixel_demo/neopixel_demo.ino for what to do.
 #define NEOPIXEL_PIN 999 // SILAS PLEASE CHANGE THIS LATER THANKS
+#define BUILTIN_LED 42
+#define BRAIN_PIN 7
 
 // MEAP STUFF
 #define CONTROL_RATE 128 // Hz, powers of 2 are most reliable
 #include <Meap.h>        // MEAP library, includes all dependent libraries, including all Mozzi modules
 
-// usbc-serial
+// usbc_serial
 Adafruit_USBD_CDC usbc_serial;
-
-// MIDI_CREATE_INSTANCE(Hardwareusbc-serial, Serial1, MIDI); // defines MIDI in/out ports
 Adafruit_USBD_MIDI usb_midi;
+
+// MIDI_CREATE_INSTANCE(Hardwareusbc_serial, Serial1, MIDI); // defines MIDI in/out ports
 MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI); // defines MIDI in/out ports
 Meap meap;                                                 // creates MEAP object to handle inputs and other MEAP library functions
 
-Hardwareusbc-serial brainSerial(2);
-// Softwareusbc-serial brainSerial(7, 42);
-Brain brain(brainusbc-serial);
+HardwareSerial brainSerial(2);
+// SoftwareSerial brainSerial(BRAIN_PIN, BUILTIN_LED);
+Brain brain(brainSerial);
 brainWrapper bryan(&brain);
 
 Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(4, NEOPIXEL_PIN, NEO_RGB);
@@ -49,8 +51,10 @@ void setup() {
   if(!TinyUSBDevice.isInitialized()) {
     TinyUSBDevice.begin(0);
   }
-  usb_midi.setStringDescriptor("TinyUSB MIDI");
   usbc_serial.begin(115200);
+  usb_midi.setStringDescriptor("TinyUSB MIDI");
+  brainSerial.begin(9600, SERIAL_8N1, BRAIN_PIN, BUILTIN_LED);
+  // softSerial.begin();
   // initialize MIDI, listen to all MIDI Channels.
   // This will also call usb_midi's begin()
   MIDI.begin(MIDI_CHANNEL_OMNI);
@@ -66,31 +70,29 @@ void setup() {
   // Attach MIDI Functions
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
-  MIDI.setControlChange(handleControlChange);
+  MIDI.setHandleControlChange(handleControlChange);
   // MIDI.setProgramChange(handleProgramChange);
 
 //  MIDI.setHandleControlChange(handleControlChange);
 //  MIDI.setHandlePitchBend(handlePitchBend);
-//  MIDI.setProgramChange(handleProgramChange);
+//  MIDI.setHandleProgramChange(handleProgramChange);
 //  MIDI.set whatever the fuck else I decide to do
   //  consult MIDI.h (~/Documents/Arduino/libraries/MIDI_Library/src/MIDI.h and
   //  ~/Documents/Arduino/libraries/MIDI_Library/src/MIDI.cpp
 
-  brainusbc-serial.begin(9600, SERIAL_8N1, 7, 42);
-  usbc-serial.begin(115200);
   meap.begin();
   startMozzi(CONTROL_RATE);   
-  bryan.setDebug(true);
+  // bryan.setDebug(true);
   // USB.onEvent(usbEventCallback);
   // tinyusb_enable_interface(USB_INTERFACE_MIDI, TUD_MIDI_DESC_LEN,
   //                         tusb_midi_load_descriptor);
   // USB.begin();
   while(!TinyUSBDevice.mounted()) delay(10);
   usbc_serial.println("morning!");
-  }
+}
 
 void loop() {
-  // usbc-serial.println("a");
+  // usbc_serial.println("a");
   #ifdef TINYUSB_NEED_POLLING_TASK
   // Manual call tud_task since it isn't called by Core's background
     TinyUSBDevice.task();
@@ -100,11 +102,15 @@ void loop() {
   if(!TinyUSBDevice.mounted()) {
     return;
   }
-
+  MIDI.sendNoteOn(48, 127, 1);
+  MIDI.sendNoteOff(48, 127, 1);
+  delay(100);
   MIDI.read();
+  usbc_serial.println(brain.readErrors());
+  usbc_serial.println(brain.readCSV());
   bryan.update();
   audioHook(); // handles Mozzi audio generation behind the scenes
-  }
+}
 
 
 /** Called automatically at rate specified by CONTROL_RATE macro, most of your code should live in here
@@ -113,8 +119,8 @@ void updateControl()
 {
   meap.readInputs();
   // bryan.update();
-  // usbc-serial.println(brain.readErrors());
-  // usbc-serial.println(brain.readCSV());
+  // usbc_serial.println(brain.readErrors());
+  // usbc_serial.println(brain.readCSV());
   // ---------- YOUR updateControl CODE BELOW ----------
 }
 
@@ -150,77 +156,77 @@ void updateTouch(int number, bool pressed)
     }
     else
     { // Pad 0 released
-      usbc-serial.println("t0 released");
+      usbc_serial.println("t0 released");
     }
     break;
   case 1:
     if (pressed)
     { // Pad 1 pressed
-      usbc-serial.println("t1 pressed");
+      usbc_serial.println("t1 pressed");
     }
     else
     { // Pad 1 released
-      usbc-serial.println("t1 released");
+      usbc_serial.println("t1 released");
     }
     break;
   case 2:
     if (pressed)
     { // Pad 2 pressed
-      usbc-serial.println("t2 pressed");
+      usbc_serial.println("t2 pressed");
     }
     else
     { // Pad 2 released
-      usbc-serial.println("t2 released");
+      usbc_serial.println("t2 released");
     }
     break;
   case 3:
     if (pressed)
     { // Pad 3 pressed
-      usbc-serial.println("t3 pressed");
+      usbc_serial.println("t3 pressed");
     }
     else
     { // Pad 3 released
-      usbc-serial.println("t3 released");
+      usbc_serial.println("t3 released");
     }
     break;
   case 4:
     if (pressed)
     { // Pad 4 pressed
-      usbc-serial.println("t4 pressed");
+      usbc_serial.println("t4 pressed");
     }
     else
     { // Pad 4 released
-      usbc-serial.println("t4 released");
+      usbc_serial.println("t4 released");
     }
     break;
   case 5:
     if (pressed)
     { // Pad 5 pressed
-      usbc-serial.println("t5 pressed");
+      usbc_serial.println("t5 pressed");
     }
     else
     { // Pad 5 released
-      usbc-serial.println("t5 released");
+      usbc_serial.println("t5 released");
     }
     break;
   case 6:
     if (pressed)
     { // Pad 6 pressed
-      usbc-serial.println("t6 pressed");
+      usbc_serial.println("t6 pressed");
     }
     else
     { // Pad 6 released
-      usbc-serial.println("t6 released");
+      usbc_serial.println("t6 released");
     }
     break;
   case 7:
     if (pressed)
     { // Pad 7 pressed
-      usbc-serial.println("t7 pressed");
+      usbc_serial.println("t7 pressed");
     }
     else
     { // Pad 7 released
-      usbc-serial.println("t7 released");
+      usbc_serial.println("t7 released");
     }
     break;
   }
@@ -245,81 +251,81 @@ void updateDip(int number, bool up)
   case 0:
     if (up)
     { // DIP 0 up
-      usbc-serial.println("d0 up");
+      usbc_serial.println("d0 up");
     }
     else
     { // DIP 0 down
-      usbc-serial.println("d0 down");
+      usbc_serial.println("d0 down");
     }
     break;
   case 1:
     if (up)
     { // DIP 1 up
-      usbc-serial.println("d1 up");
+      usbc_serial.println("d1 up");
     }
     else
     { // DIP 1 down
-      usbc-serial.println("d1 down");
+      usbc_serial.println("d1 down");
     }
     break;
   case 2:
     if (up)
     { // DIP 2 up
-      usbc-serial.println("d2 up");
+      usbc_serial.println("d2 up");
     }
     else
     { // DIP 2 down
-      usbc-serial.println("d2 down");
+      usbc_serial.println("d2 down");
     }
     break;
   case 3:
     if (up)
     { // DIP 3 up
-      usbc-serial.println("d3 up");
+      usbc_serial.println("d3 up");
     }
     else
     { // DIP 3 down
-      usbc-serial.println("d3 down");
+      usbc_serial.println("d3 down");
     }
     break;
   case 4:
     if (up)
     { // DIP 4 up
-      usbc-serial.println("d4 up");
+      usbc_serial.println("d4 up");
     }
     else
     { // DIP 4 down
-      usbc-serial.println("d4 down");
+      usbc_serial.println("d4 down");
     }
     break;
   case 5:
     if (up)
     { // DIP 5 up
-      usbc-serial.println("d5 up");
+      usbc_serial.println("d5 up");
     }
     else
     { // DIP 5 down
-      usbc-serial.println("d5 down");
+      usbc_serial.println("d5 down");
     }
     break;
   case 6:
     if (up)
     { // DIP 6 up
-      usbc-serial.println("d6 up");
+      usbc_serial.println("d6 up");
     }
     else
     { // DIP 6 down
-      usbc-serial.println("d6 down");
+      usbc_serial.println("d6 down");
     }
     break;
   case 7:
     if (up)
     { // DIP 7 up
-      usbc-serial.println("d7 up");
+      usbc_serial.println("d7 up");
     }
     else
     { // DIP 7 down
-      usbc-serial.println("d7 down");
+      usbc_serial.println("d7 down");
     }
     break;
   }
