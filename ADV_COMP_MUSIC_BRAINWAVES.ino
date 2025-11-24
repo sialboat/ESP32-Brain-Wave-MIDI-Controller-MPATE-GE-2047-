@@ -10,61 +10,102 @@
 
 #include "brainWrapper.h"
 #include <Adafruit_TinyUSB.h>
+#include <MIDI.h>
 #include <SoftwareSerial.h>
 #include <Brain.h>
 #include <MIDI.h>
+#include <Adafruit_NeoPixel.h>
 
-// #include "USB.h"
+// add a neopixel for visual feedback / indicator of other changes that will happen.
+// Consult ~/Documents/Arduino/neopixel_demo/neopixel_demo.ino for what to do.
+#define NEOPIXEL_PIN 999 // SILAS PLEASE CHANGE THIS LATER THANKS
 
 // MEAP STUFF
 #define CONTROL_RATE 128 // Hz, powers of 2 are most reliable
 #include <Meap.h>        // MEAP library, includes all dependent libraries, including all Mozzi modules
 
+// MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // defines MIDI in/out ports
 Adafruit_USBD_MIDI usb_midi;
 MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI); // defines MIDI in/out ports
-Meap meap;                                           // creates MEAP object to handle inputs and other MEAP library functions
-// MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI); // defines MIDI in/out ports
+Meap meap;                                                 // creates MEAP object to handle inputs and other MEAP library functions
 
 HardwareSerial brainSerial(2);
 // SoftwareSerial brainSerial(7, 42);
 Brain brain(brainSerial);
 brainWrapper bryan(&brain);
 
-#if ARDUINO_USB_MODE
-#warning This sketch must be used when USB is in OTG mode
-void setup() {}
-void loop() {}
-#else
+Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(4, NEOPIXEL_PIN, NEO_RGB);
+
+// #if ARDUINO_USB_MODE
+// #warning This sketch must be used when USB is in OTG mode
+// void setup() {}
+// void loop() {}
+// #else
 
 void setup() {
-  // Serial.begin(9600);
-  // brainSerial.begin(9600);
+  if(!TinyUSBDevice.isInitialized()) {
+    TinyUSBDevice.begin(0);
+  }
+   usb_midi.setStringDescriptor("TinyUSB MIDI");
+
+
+  // initialize MIDI, listen to all MIDI Channels.
+  // This will also call usb_midi's begin()
+  MIDI.begin(MIDI_CHANNEL_OMNI);
+
+  // failsafe-if already enumerated, additional class driver begin() for stuff like
+  // msc, hid, midi won't kick in until re-enumeration.
+  if(TinyUSBDevice.mounted()) {
+    TinyUSBDevice.detach();
+    delay(10);
+    TinyUSBDevice.attach();
+  }
+
+  // Attach MIDI Functions
+  // MIDI.setHandleNoteOn(handleNoteOn);
+  // MIDI.setHandleNoteOff(handleNoteOff);
+  // MIDI.setControlChange(handleControlChange);
+  // MIDI.setProgramChange(handleProgramChange);
+
+//  MIDI.setHandleControlChange(handleControlChange);
+//  MIDI.setHandlePitchBend(handlePitchBend);
+//  MIDI.setProgramChange(handleProgramChange);
+//  MIDI.set whatever the fuck else I decide to do
+  //  consult MIDI.h (~/Documents/Arduino/libraries/MIDI_Library/src/MIDI.h and
+  //  ~/Documents/Arduino/libraries/MIDI_Library/src/MIDI.cpp
+
   brainSerial.begin(9600, SERIAL_8N1, 7, 42);
   Serial.begin(115200);
   meap.begin();
   startMozzi(CONTROL_RATE);   
   bryan.setDebug(true);
-  USB.onEvent(usbEventCallback);
-  tinyusb_enable_interface(USB_INTERFACE_MIDI, TUD_MIDI_DESC_LEN,
-                           tusb_midi_load_descriptor);
-  USB.begin();
-  while (!Serial && millis() < 5000) {
-    Serial.println("foo");
-    delay(10);
-  }
+  // USB.onEvent(usbEventCallback);
+  // tinyusb_enable_interface(USB_INTERFACE_MIDI, TUD_MIDI_DESC_LEN,
+  //                         tusb_midi_load_descriptor);
+  // USB.begin();
+  USBSerial.begin(115200);
+  while(!USBSerial) delay(10);
+  USBSerial.println("We got Serial CDC Communication working!");
+
 }
 
 void loop() {
   // Serial.println("a");
-  Serial.println(brain.readErrors());
-  Serial.println(brain.readCSV());
+  #ifdef TINYUSB_NEED_POLLING_TASK
+  // Manual call tud_task since it isn't called by Core's background
+  TinyUSBDevice.task();
+  #endif
+
+  USBSerial.println(brain.readErrors());
+  USBSerial.println(brain.readCSV());
   bryan.update();
   audioHook(); // handles Mozzi audio generation behind the scenes
+  MIDI.read();
 }
 
 
 /** Called automatically at rate specified by CONTROL_RATE macro, most of your code should live in here
-//  */
+*/
 void updateControl()
 {
   meap.readInputs();
@@ -281,4 +322,17 @@ void updateDip(int number, bool up)
   }
 }
 
-#endif /* ARDUINO_USB_MODE */
+void handleNoteOn(uint8_t channel, uint8_t pitch, uint8_t velocity) {
+  // do something here
+}
+void handleNoteOff(uint8_t channel, uint8_t pitch, uint8_t velocity) {
+  // do something here
+}
+void handleControlChange(uint8_t channel, uint8_t value, uint8_t cc_num) {
+  // do something here
+}
+void handleProgramChange(uint8_t prog_num, uint8_t channel) {
+  // do something here
+}
+
+// #endif /* ARDUINO_USB_MODE */
