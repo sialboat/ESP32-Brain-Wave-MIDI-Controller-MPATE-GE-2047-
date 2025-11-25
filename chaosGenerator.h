@@ -1,5 +1,8 @@
 // chaosGenerator.h
 // class that abstracts basic chaos generators
+// chaos generators are derived from the Softology blog.
+// https://www.softology.pro/tutorials/attractors2d/tutorial.htm
+
 #include <iomanip>
 #include <functional>
 #include <math>
@@ -20,13 +23,9 @@ public:
 	uint8_t get_id() {return id;}
 protected:
 	uint8_t id;
-private:
-
 };
 
-// implementation of fractal_dreams chaos generator
-// based off of this website: 
-// https://www.softology.pro/tutorials/attractors2d/tutorial.htm
+// chaos generators are based off of the ones from this website:
 class
 fractal_dreams : public chaos_generator
 {
