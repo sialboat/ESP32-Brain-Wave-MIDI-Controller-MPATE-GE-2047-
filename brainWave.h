@@ -6,20 +6,20 @@
 */
 
 
-namespace INTERP
-{
-  enum class INTERPOLATION
-  {
-    LINEAR = 1, LAGRANGE = 2, HERMITE = 3,
-  };
+namespace INTERP {
+enum class INTERPOLATION {
+  LINEAR = 1,
+  LAGRANGE = 2,
+  HERMITE = 3,
+};
 }
 
-class brainWave
-{
+class brainWave {
 public:
-  brainWave(size_t i) : fft_index(i) {
-    alpha = 0.5f;
-    interpolation_mode = INTERP::INTERPOLATION::HERMITE;
+  brainWave(size_t i)
+    : fft_index(i) {
+    alpha = 0.99f;
+    interpolation_mode = INTERP::INTERPOLATION::LINEAR;
     p0 = 0;
     p1 = 0;
     p2 = 0;
@@ -28,10 +28,8 @@ public:
     out_val = 0;
   }
 
-  void set_interp(int type)
-  {
-    switch(type)
-    {
+  void set_interp(int type) {
+    switch (type) {
       case 1:
         interpolation_mode = INTERP::INTERPOLATION::LINEAR;
         break;
@@ -47,8 +45,7 @@ public:
     }
   }
   // updates the value stored in val
-  void update(unsigned long new_val)
-  {
+  void update(unsigned long new_val) {
     // = arr[fft_index];
 
     // sample data
@@ -57,36 +54,40 @@ public:
     p0 = new_val;
 
     // approximate tangent
-    m0 = (p1 - p0) / 2;     // approximate tangent of p0
-    m1 = (p2 - p0) / 2;     // approximate tangent of p1
+    m0 = (p1 - p0) / 2;  // approximate tangent of p0
+    m1 = (p2 - p0) / 2;  // approximate tangent of p1
 
     interp();
   }
 
-  void interp()
-  {
-    switch(interpolation_mode)
-    {
-      case INTERP::INTERPOLATION::LINEAR:
-        out_val = lerp();
-        break;
-      case INTERP::INTERPOLATION::LAGRANGE:
-        out_val = lagrange();
-        break;
-      case INTERP::INTERPOLATION::HERMITE:
-        out_val = hermite();
-        break;
-      default:
-        out_val = hermite();
-        break;
-    }
-    // return out_val;  
+  void interp() {
+    // switch (interpolation_mode) {
+    //   case INTERP::INTERPOLATION::LINEAR:
+    //     out_val = lerp();
+    //     break;
+    //   case INTERP::INTERPOLATION::LAGRANGE:
+    //     out_val = lagrange();
+    //     break;
+    //   case INTERP::INTERPOLATION::HERMITE:
+    //     out_val = hermite();
+    //     break;
+    //   default:
+    //     out_val = hermite();
+    //     break;
+    // }
+    // return out_val;
+    out_val = leaky_integrator();
+    // return out_val;
   }
 
   // simple low computation moving average filter / linear interpolation algorithm
-  unsigned long lerp()
-  {
+  unsigned long lerp() {
     return (unsigned long)(alpha * p0) + ((1 - alpha) * p1);
+  }
+
+  unsigned long leaky_integrator() {
+    l_out = (alp)*l_out + (1.f - alp) * p0;
+    return l_out;
   }
 
   /*
@@ -122,12 +123,11 @@ public:
    Referred to the "Barycentric Form" section of the Lagrange Polynomial Wikipedia Page
    https://en.wikipedia.org/wiki/Lagrange_polynomial
   */
-  unsigned long lagrange()
-  {
-    float w0, w1, w2;   // weight values
-    int8_t x0, x1, x2;  // sample indices
-    float x = alpha;    // distance from point 1 to point 2, adjust it via the alpha variable
-    unsigned long c0, c1, c2, num, denom; // values
+  unsigned long lagrange() {
+    float w0, w1, w2;                      // weight values
+    int8_t x0, x1, x2;                     // sample indices
+    float x = alpha;                       // distance from point 1 to point 2, adjust it via the alpha variable
+    unsigned long c0, c1, c2, num, denom;  // values
 
     // sample indices with respect to p2 (current sample), p1 (one sample ago), p0 (two samples ago)
     x0 = 0;
@@ -163,10 +163,9 @@ public:
     Referred to the "Interpolation on a single Unit Interval [0, 1]" section for this implementation on Wikipedia.
     https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
   */
-  unsigned long hermite()
-  {
+  unsigned long hermite() {
     // precompute square and cubic values
-    uint16_t a2 = alpha * alpha; 
+    uint16_t a2 = alpha * alpha;
     uint16_t a3 = alpha * alpha * alpha;
 
     //calculate each subcomponent
@@ -179,23 +178,41 @@ public:
 
   // fuckshit getters and setters
 public:
-  void set_fft_index(size_t val) {fft_index = val;}
-  size_t get_fft_index() {return fft_index;}
-  void set_out_val(unsigned long new_val) {out_val = new_val;}
-  void set_p0(unsigned long new_val) {p0 = new_val;}
-  unsigned long get_val() {return out_val;}
-  void set_alpha(float new_alpha = default_alpha) {alpha = new_alpha;}
-  float get_alpha() {return alpha;}
+  void set_fft_index(size_t val) {
+    fft_index = val;
+  }
+  size_t get_fft_index() {
+    return fft_index;
+  }
+  void set_out_val(unsigned long new_val) {
+    out_val = new_val;
+  }
+  void set_p0(unsigned long new_val) {
+    p0 = new_val;
+  }
+  unsigned long get_val() {
+    return out_val;
+  }
+  void set_alpha(float new_alpha = default_alpha) {
+    alpha = new_alpha;
+  }
+  float get_alpha() {
+    return alpha;
+  }
 
-  private:
-  size_t fft_index;   // index of the FFT array upon calling "brain->readPowerArray()"
+private:
+  size_t fft_index;  // index of the FFT array upon calling "brain->readPowerArray()"
   INTERP::INTERPOLATION interpolation_mode;
-  float alpha;		// akin to weight value
+  float alpha;  // akin to weight value
   static constexpr float default_alpha = 0.5f;
   unsigned long out_val;
-  unsigned long p0;   // current sample
-  unsigned long p1;   // previous sample
-  unsigned long p2;   // previous previous sample
-  unsigned long m0;   // slope of current sample p0
-  unsigned long m1;   // slope of previous sample p1
+  float p0;  // current sample
+  unsigned long p1;  // previous sample
+  unsigned long p2;  // previous previous sample
+  unsigned long m0;  // slope of current sample p0
+  unsigned long m1;  // slope of previous sample p1
+
+  unsigned long l_out;
+  unsigned long l_in;
+  float alp = 0.99;
 };

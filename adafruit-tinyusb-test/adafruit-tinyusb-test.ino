@@ -76,6 +76,11 @@ void loop() {
   MIDI.read();
   delay(1000);
 }
+//  void sendControlChange(DataByte inControlNumber,
+//                                  DataByte inControlValue,
+//                                  Channel inChannel);
+
+
 
 void handleNoteOn(uint8_t channel, uint8_t pitch, uint8_t velocity)
 {
