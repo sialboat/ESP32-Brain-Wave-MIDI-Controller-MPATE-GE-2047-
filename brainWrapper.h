@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <vector>
+#include <cstddef>
 #include <Adafruit_TinyUSB.h>
 #include <MIDI.h>
 #include <Brain.h>
@@ -15,17 +17,17 @@
 */
 
 namespace BRAIN_WAVE {
-enum class FFT_BAND {
-  DELTA = 0,
-  THETA = 1,
-  LOW_ALPHA = 2,
-  HIGH_ALPHA = 3,
-  LOW_BETA = 4,
-  HIGH_BETA = 5,
-  LOW_GAMMA = 6,
-  HIGH_GAMMA = 7,
+  enum class FFT_BAND {
+    DELTA = 0,
+    THETA = 1,
+    LOW_ALPHA = 2,
+    HIGH_ALPHA = 3,
+    LOW_BETA = 4,
+    HIGH_BETA = 5,
+    LOW_GAMMA = 6,
+    HIGH_GAMMA = 7,
+  };
 };
-}
 class brainWrapper {
 public:
   brainWrapper(Brain* b, Adafruit_USBD_CDC* s, Adafruit_USBD_MIDI* m)
