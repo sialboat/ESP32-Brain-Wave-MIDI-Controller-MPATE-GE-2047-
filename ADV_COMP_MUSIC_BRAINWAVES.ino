@@ -17,6 +17,7 @@
 
 // add a neopixel for visual feedback / indicator of other changes that will happen.
 // Consult ~/Documents/Arduino/neopixel_demo/neopixel_demo.ino for what to do.
+<<<<<<< HEAD
 #define NEOPIXEL_PIN 999  // SILAS PLEASE CHANGE THIS LATER THANKS
 #define BUILTIN_LED 42
 #define BRAIN_PIN 7
@@ -25,12 +26,26 @@
 #define CONTROL_RATE 128  // Hz, powers of 2 are most reliable
 #include <Meap.h>         // MEAP library, includes all dependent libraries, including all Mozzi modules
 
+=======
+#define NEOPIXEL_PIN 999 // SILAS PLEASE CHANGE THIS LATER THANKS
+#define BUILTIN_LED 42
+#define BRAIN_PIN 7
+
+// MEAP STUFF
+#define CONTROL_RATE 128 // Hz, powers of 2 are most reliable
+#include <Meap.h>        // MEAP library, includes all dependent libraries, including all Mozzi modules
+
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
 // usbc_serial
 Adafruit_USBD_CDC usbc_serial;
 Adafruit_USBD_MIDI usb_midi;
 
 // MIDI_CREATE_INSTANCE(Hardwareusbc_serial, Serial1, MIDI); // defines MIDI in/out ports
+<<<<<<< HEAD
 MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI);  // defines MIDI in/out ports
+=======
+MIDI_CREATE_INSTANCE(Adafruit_USBD_MIDI, usb_midi, MIDI); // defines MIDI in/out ports
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
 Meap meap;                                                 // creates MEAP object to handle inputs and other MEAP library functions
 
 HardwareSerial brainSerial(2);
@@ -47,7 +62,11 @@ Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(4, NEOPIXEL_PIN, NEO_RGB);
 // #else
 
 void setup() {
+<<<<<<< HEAD
   if (!TinyUSBDevice.isInitialized()) {
+=======
+  if(!TinyUSBDevice.isInitialized()) {
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
     TinyUSBDevice.begin(0);
   }
   usbc_serial.begin(115200);
@@ -60,7 +79,11 @@ void setup() {
 
   // failsafe-if already enumerated, additional class driver begin() for stuff like
   // msc, hid, midi won't kick in until re-enumeration.
+<<<<<<< HEAD
   if (TinyUSBDevice.mounted()) {
+=======
+  if(TinyUSBDevice.mounted()) {
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
     TinyUSBDevice.detach();
     delay(10);
     TinyUSBDevice.attach();
@@ -72,26 +95,42 @@ void setup() {
   MIDI.setHandleControlChange(handleControlChange);
   // MIDI.setProgramChange(handleProgramChange);
 
+<<<<<<< HEAD
   //  MIDI.setHandleControlChange(handleControlChange);
   //  MIDI.setHandlePitchBend(handlePitchBend);
   //  MIDI.setHandleProgramChange(handleProgramChange);
   //  MIDI.set whatever the fuck else I decide to do
+=======
+//  MIDI.setHandleControlChange(handleControlChange);
+//  MIDI.setHandlePitchBend(handlePitchBend);
+//  MIDI.setHandleProgramChange(handleProgramChange);
+//  MIDI.set whatever the fuck else I decide to do
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
 
   //  consult MIDI.h (~/Documents/Arduino/libraries/MIDI_Library/src/MIDI.h and
   //  ~/Documents/Arduino/libraries/MIDI_Library/src/MIDI.cpp
 
   meap.begin();
+<<<<<<< HEAD
   startMozzi(CONTROL_RATE);
+=======
+  startMozzi(CONTROL_RATE);   
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
   bryan.setDebug(true);
   // USB.onEvent(usbEventCallback);
   // tinyusb_enable_interface(USB_INTERFACE_MIDI, TUD_MIDI_DESC_LEN,
   //                         tusb_midi_load_descriptor);
   // USB.begin();
+<<<<<<< HEAD
   while (!TinyUSBDevice.mounted()) delay(10);
+=======
+  while(!TinyUSBDevice.mounted()) delay(10);
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
   usbc_serial.println("morning!");
 }
 
 void loop() {
+<<<<<<< HEAD
 // usbc_serial.println("a");
 #ifdef TINYUSB_NEED_POLLING_TASK
   // Manual call tud_task since it isn't called by Core's background
@@ -103,6 +142,22 @@ void loop() {
     return;
   }
   // delay(100);
+=======
+  // usbc_serial.println("a");
+  #ifdef TINYUSB_NEED_POLLING_TASK
+  // Manual call tud_task since it isn't called by Core's background
+    TinyUSBDevice.task();
+  #endif
+
+  // shit the bed; failsafe.
+  if(!TinyUSBDevice.mounted()) {
+    return;
+  }
+  MIDI.sendNoteOn(48, 127, 1);
+  MIDI.sendNoteOff(48, 127, 1);
+  // delay(100);
+  MIDI.read();
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
   bryan.update();
   // usbc_serial.println(bryan.getTheta());
   // usbc_serial.println(bryan.getDelta());
@@ -146,7 +201,12 @@ void loop() {
 
 /** Called automatically at rate specified by CONTROL_RATE macro, most of your code should live in here
 */
+<<<<<<< HEAD
 void updateControl() {
+=======
+void updateControl()
+{
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
   meap.readInputs();
   // bryan.update();
   // usbc_serial.println(brain.readErrors());
@@ -172,6 +232,7 @@ void updateTouch(int number, bool pressed) {
   if (pressed) {  // Any pad pressed
   } else {        // Any pad released
   }
+<<<<<<< HEAD
   switch (number) {
     case 0:
       if (pressed) {  // Pad 0 pressed
@@ -229,6 +290,93 @@ void updateTouch(int number, bool pressed) {
         usbc_serial.println("t7 released");
       }
       break;
+=======
+  else
+  { // Any pad released
+  }
+  switch (number)
+  {
+  case 0:
+    if (pressed)
+    { // Pad 0 pressed
+      usbc_serial.println("t0 pressed ");
+    }
+    else
+    { // Pad 0 released
+      usbc_serial.println("t0 released");
+    }
+    break;
+  case 1:
+    if (pressed)
+    { // Pad 1 pressed
+      usbc_serial.println("t1 pressed");
+    }
+    else
+    { // Pad 1 released
+      usbc_serial.println("t1 released");
+    }
+    break;
+  case 2:
+    if (pressed)
+    { // Pad 2 pressed
+      usbc_serial.println("t2 pressed");
+    }
+    else
+    { // Pad 2 released
+      usbc_serial.println("t2 released");
+    }
+    break;
+  case 3:
+    if (pressed)
+    { // Pad 3 pressed
+      usbc_serial.println("t3 pressed");
+    }
+    else
+    { // Pad 3 released
+      usbc_serial.println("t3 released");
+    }
+    break;
+  case 4:
+    if (pressed)
+    { // Pad 4 pressed
+      usbc_serial.println("t4 pressed");
+    }
+    else
+    { // Pad 4 released
+      usbc_serial.println("t4 released");
+    }
+    break;
+  case 5:
+    if (pressed)
+    { // Pad 5 pressed
+      usbc_serial.println("t5 pressed");
+    }
+    else
+    { // Pad 5 released
+      usbc_serial.println("t5 released");
+    }
+    break;
+  case 6:
+    if (pressed)
+    { // Pad 6 pressed
+      usbc_serial.println("t6 pressed");
+    }
+    else
+    { // Pad 6 released
+      usbc_serial.println("t6 released");
+    }
+    break;
+  case 7:
+    if (pressed)
+    { // Pad 7 pressed
+      usbc_serial.println("t7 pressed");
+    }
+    else
+    { // Pad 7 released
+      usbc_serial.println("t7 released");
+    }
+    break;
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
   }
 }
 
@@ -242,6 +390,7 @@ void updateDip(int number, bool up) {
   if (up) {  // Any DIP toggled up
   } else {   // Any DIP toggled down
   }
+<<<<<<< HEAD
   switch (number) {
     case 0:
       if (up) {  // DIP 0 up
@@ -299,6 +448,93 @@ void updateDip(int number, bool up) {
         usbc_serial.println("d7 down");
       }
       break;
+=======
+  else
+  { // Any DIP toggled down
+  }
+  switch (number)
+  {
+  case 0:
+    if (up)
+    { // DIP 0 up
+      usbc_serial.println("d0 up");
+    }
+    else
+    { // DIP 0 down
+      usbc_serial.println("d0 down");
+    }
+    break;
+  case 1:
+    if (up)
+    { // DIP 1 up
+      usbc_serial.println("d1 up");
+    }
+    else
+    { // DIP 1 down
+      usbc_serial.println("d1 down");
+    }
+    break;
+  case 2:
+    if (up)
+    { // DIP 2 up
+      usbc_serial.println("d2 up");
+    }
+    else
+    { // DIP 2 down
+      usbc_serial.println("d2 down");
+    }
+    break;
+  case 3:
+    if (up)
+    { // DIP 3 up
+      usbc_serial.println("d3 up");
+    }
+    else
+    { // DIP 3 down
+      usbc_serial.println("d3 down");
+    }
+    break;
+  case 4:
+    if (up)
+    { // DIP 4 up
+      usbc_serial.println("d4 up");
+    }
+    else
+    { // DIP 4 down
+      usbc_serial.println("d4 down");
+    }
+    break;
+  case 5:
+    if (up)
+    { // DIP 5 up
+      usbc_serial.println("d5 up");
+    }
+    else
+    { // DIP 5 down
+      usbc_serial.println("d5 down");
+    }
+    break;
+  case 6:
+    if (up)
+    { // DIP 6 up
+      usbc_serial.println("d6 up");
+    }
+    else
+    { // DIP 6 down
+      usbc_serial.println("d6 down");
+    }
+    break;
+  case 7:
+    if (up)
+    { // DIP 7 up
+      usbc_serial.println("d7 up");
+    }
+    else
+    { // DIP 7 down
+      usbc_serial.println("d7 down");
+    }
+    break;
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
   }
 }
 
@@ -321,6 +557,10 @@ void handleNoteOff(uint8_t channel, uint8_t pitch, uint8_t velocity) {
   usbc_serial.print(", ");
   usbc_serial.print(velocity);
   usbc_serial.print(" (chan / pitch / velocity)\n");
+<<<<<<< HEAD
+=======
+
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
 }
 void handleControlChange(uint8_t channel, uint8_t value, uint8_t cc_num) {
   // do something here
@@ -336,4 +576,8 @@ void handleProgramChange(uint8_t prog_num, uint8_t channel) {
   // do something here
 }
 
+<<<<<<< HEAD
 // #endif /* ARDUINO_USB_MODE */
+=======
+// #endif /* ARDUINO_USB_MODE */
+>>>>>>> 749d1127905e018980f185d505cfe125fc409654
