@@ -1,9 +1,6 @@
 #include <Arduino.h>
-<<<<<<< HEAD
 #include <vector>
 #include <cstddef>
-=======
->>>>>>> 749d1127905e018980f185d505cfe125fc409654
 #include <Adafruit_TinyUSB.h>
 #include <MIDI.h>
 #include <Brain.h>
@@ -30,7 +27,6 @@ namespace BRAIN_WAVE {
     LOW_GAMMA = 6,
     HIGH_GAMMA = 7,
   };
-<<<<<<< HEAD
 };
 class brainWrapper {
 public:
@@ -40,16 +36,6 @@ public:
     brain_waves.reserve(8);  // avoid reallocation
     for (size_t i = 0; i < 8; i++) {
       brain_waves.emplace_back(i);  // construct object whilst passing it into vector, argument goes inside of parenthases
-=======
-}
-class brainWrapper
-{
-public:
-  brainWrapper(Brain* b, Adafruit_USBD_CDC* s, Adafruit_USBD_MIDI* m) : brain(b), adafruit_serial(s), adafruit_midi(m) {
-    for(int i = 0; i < 8; i++) {
-      brainWave wave(i);
-      brain_waves.push_back(wave);
->>>>>>> 749d1127905e018980f185d505cfe125fc409654
     }
   }
 
@@ -66,11 +52,8 @@ public:
       }
       attention = brain->readAttention();
       meditation = brain->readMeditation();
-<<<<<<< HEAD
-      if (debug) {
-=======
+
      if(debug) {
->>>>>>> 749d1127905e018980f185d505cfe125fc409654
         adafruit_serial->println(brain->readErrors());
         adafruit_serial->println(brain->readCSV());
       }
@@ -84,16 +67,12 @@ public:
     for (size_t i = 0; i < brain_waves.size(); i++) {
       unsigned long new_value = waves[i];
       brain_waves.at(i).update(new_value);
-<<<<<<< HEAD
       // adafruit_serial->println(waves[i]);
       // adafruit_serial->println(brain_waves.at(i).get_val());
-=======
->>>>>>> 749d1127905e018980f185d505cfe125fc409654
     }
   }
 
   // getters and setters
-<<<<<<< HEAD
 public:
   uint8_t getMeditation() {
     return meditation;
@@ -157,7 +136,6 @@ public:
     return brain_waves.at(static_cast<size_t>(BRAIN_WAVE::FFT_BAND::HIGH_GAMMA)).get_val();
   }
 
-=======
  public:
   uint8_t getMeditation() {return meditation;}
   uint8_t getAttention() {return attention;}
@@ -171,17 +149,11 @@ public:
   unsigned long getHighGamma() {return brain_waves.at(static_cast<size_t>(BRAIN_WAVE::FFT_BAND::HIGH_GAMMA)).get_val();}  
   std::vector<brainWave>* getBrainWaves() {return &brain_waves;}
 
->>>>>>> 749d1127905e018980f185d505cfe125fc409654
-  // the fuckshit that makes this happen
 private:
   Brain* brain;
   Adafruit_USBD_MIDI* adafruit_midi;
   Adafruit_USBD_CDC* adafruit_serial;
-<<<<<<< HEAD
   unsigned long waves[8];
-=======
-  unsigned long* waves;
->>>>>>> 749d1127905e018980f185d505cfe125fc409654
   bool debug = false;
   int pin;
   std::vector<brainWave> brain_waves;
