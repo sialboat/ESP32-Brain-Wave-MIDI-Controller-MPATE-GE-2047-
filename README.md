@@ -8,7 +8,7 @@ The current iteration of this framework will enable brain waves to control audio
 
 The main contents of the file is under the file `ADV_COMP_MUSIC_BRAINWAVES.ino`. Other directories within this repository are test code used to interface with crucial partsof the project (interfacing with the MindFlex, sending MIDI via tinyUSB). An obsidian `.canvas` file has been provided to give a high-level software stack.
 
-## MindFlex Brain EEG.
+## MindFlex Brain EEG
 You can find more information about the MindFlex EEG sensor [here](https://en.wikipedia.org/wiki/Mindflex). They retail for less than $80 on [eBay](https://www.ebay.com/sch/i.html?_nkw=mindflex&_sacat=0&_from=R40&_trksid=p4624852.m570.l1313). 
 
 The incredible folks at NYU's ITP program have provided a comprehensive [tutorial](https://frontiernerds.com/brain-hack) on how to get this up and running. In addition, they have also provided an [Arduino Library](https://github.com/kitschpatrol/Brain) to interface with the MindFlex controller. 
